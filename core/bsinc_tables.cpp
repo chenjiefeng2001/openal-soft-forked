@@ -344,9 +344,17 @@ struct BSincFilterArray {
     [[nodiscard]] constexpr auto getTable() const noexcept { return std::span{mTable}; }
 };
 
+// MSVC Debug 模式修复：BSincFilterArray 的 constexpr 超大查找表在 Debug CRT 中
+// 初始化时发生 0xC0000005 访问违规。强制全局变量在 Release 模式下初始化以避免此问题。
+#ifdef _MSC_VER
+#pragma optimize("gt", on)
+#endif
 const auto bsinc12_filter = BSincFilterArray<bsinc12_hdr>{};
 const auto bsinc24_filter = BSincFilterArray<bsinc24_hdr>{};
 const auto bsinc48_filter = BSincFilterArray<bsinc48_hdr>{};
+#ifdef _MSC_VER
+#pragma optimize("", on)
+#endif
 
 template<typename T>
 constexpr auto GenerateBSincTable(const T &filter) noexcept -> BSincTable
